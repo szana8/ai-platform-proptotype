@@ -30,18 +30,18 @@ services:
         env_file:
             - ./.env
         volumes:
-            - ./.chroma-db-langflow:/tmp/chromadb
+            - ./.chroma-db-data:/app/chromadb-data
         networks:
             - app-network
 
-    chromadb:
-        image: chromadb/chroma:latest
-        volumes:
-        - ./chromadb:/chroma/chroma
-        env_file:
-            - ./.env
-        networks:
-            - app-network
+    # chromadb:
+    #     image: chromadb/chroma:latest
+    #     volumes:
+    #     - ./chromadb:/chroma/chroma
+    #     env_file:
+    #         - ./.env
+    #     networks:
+    #         - app-network
 
     # prometheus:
     #     image: prom/prometheus
