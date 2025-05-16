@@ -1,0 +1,76 @@
+services:
+
+    # Postgres Service
+    postgres:
+        image: postgres:latest
+        environment:
+            POSTGRES_USER: ${DB_USERNAME}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+            POSTGRES_DB: ${DB_DATABASE}
+        ports:
+            - "5433:5432"
+        volumes:
+            - '~/.${APP_CONTAINER_NAME}/data/postgres:/var/lib/postgresql/data'
+        networks:
+            - app-network
+
+    langflow:
+        image: langflowai/langflow:1.4.0
+        #pull_policy: always
+        ports:
+            - "7860:7860"
+            - "9090:9090"
+        depends_on:
+            - postgres
+        environment:
+            - LANGFLOW_DATABASE_URL=postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/langflow
+            # This variable defines where the logs, file storage, monitor data and secret keys are stored.
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        env_file:
+            - ./.env
+        volumes:
+            - ./.chroma-db-langflow:/tmp/chromadb
+        networks:
+            - app-network
+
+    chromadb:
+        image: chromadb/chroma:latest
+        volumes:
+        - ./chromadb:/chroma/chroma
+        env_file:
+            - ./.env
+        networks:
+            - app-network
+
+    # prometheus:
+    #     image: prom/prometheus
+    #     ports:
+    #         - 9090:9090
+    #     networks:
+    #         - app-network
+
+    grafana:
+        image: grafana/grafana:latest
+        container_name: grafana
+        restart: unless-stopped
+        volumes:
+            - ./.grafana_data:/var/lib/grafana
+        environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+            - GF_USERS_ALLOW_SIGN_UP=false
+        ports:
+            - "3000:3000"
+        networks:
+            - app-network
+
+#Docker Networks
+networks:
+    app-network:
+        driver: bridge
+
+#Volumes
+volumes:
+    dbdata:
+        driver: local
