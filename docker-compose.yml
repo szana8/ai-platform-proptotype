@@ -30,18 +30,24 @@ services:
         env_file:
             - ./.env
         volumes:
+            - ./.langflow-data:/app/data
             - ./.chroma-db-data:/app/chromadb-data
         networks:
             - app-network
 
-    # chromadb:
-    #     image: chromadb/chroma:latest
-    #     volumes:
-    #     - ./chromadb:/chroma/chroma
-    #     env_file:
-    #         - ./.env
-    #     networks:
-    #         - app-network
+    vector:
+        image: qdrant/qdrant:latest
+        volumes:
+        - ./qdrant_data:/qdrant/storage
+        ports:
+            - "8100:6333"
+            - "8101:6334"
+        env_file:
+            - ./.env
+        environment:
+            - QDRANT_ALLOW_CORS=true
+        networks:
+            - app-network
 
     # prometheus:
     #     image: prom/prometheus
