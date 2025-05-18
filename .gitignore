@@ -1,3 +1,5 @@
 .chroma-db-data
-.grafana_data
+.grafana-data
 .langflow-data
+.qdrant-data
+.prometheus-data

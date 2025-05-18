@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Scrape Langflow’s built-in metrics
+  - job_name: "langflow"
+    static_configs:
+      - targets: ["langflow:9090"]
+
+  # Scrape Prometheus itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["prometheus:9090"]
+
+  # Qdrant vector DB metrics
+  - job_name: "qdrant"
+    static_configs:
+      - targets: ["vector:6333"]

@@ -19,12 +19,11 @@ services:
         #pull_policy: always
         ports:
             - "7860:7860"
-            - "9090:9090"
+            - "9095:9090"
         depends_on:
             - postgres
         environment:
             - LANGFLOW_DATABASE_URL=postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/langflow
-            # This variable defines where the logs, file storage, monitor data and secret keys are stored.
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         env_file:
@@ -38,7 +37,7 @@ services:
     vector:
         image: qdrant/qdrant:latest
         volumes:
-        - ./qdrant_data:/qdrant/storage
+        - ./.qdrant-data:/qdrant/storage
         ports:
             - "8100:6333"
             - "8101:6334"
@@ -49,25 +48,33 @@ services:
         networks:
             - app-network
 
-    # prometheus:
-    #     image: prom/prometheus
-    #     ports:
-    #         - 9090:9090
-    #     networks:
-    #         - app-network
+    prometheus:
+        image: prom/prometheus:latest
+        container_name: prometheus
+        command:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+        volumes:
+            - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+            - ./.prometheus-data:/prometheus
+        ports:
+            - "9090:9090"   # Prometheus UI
+        depends_on:
+            - langflow
+        networks:
+            - app-network
 
     grafana:
-        image: grafana/grafana:latest
+        image: grafana/grafana-oss:latest
         container_name: grafana
-        restart: unless-stopped
-        volumes:
-            - ./.grafana_data:/var/lib/grafana
         environment:
-            - GF_SECURITY_ADMIN_USER=admin
-            - GF_SECURITY_ADMIN_PASSWORD=admin
-            - GF_USERS_ALLOW_SIGN_UP=false
+        - GF_SECURITY_ADMIN_USER=admin
+        - GF_SECURITY_ADMIN_PASSWORD=admin
         ports:
-            - "3000:3000"
+        - "3000:3000"   # Grafana UI
+        volumes:
+            - ./.grafana-data:/var/lib/grafana
+        depends_on:
+            - prometheus
         networks:
             - app-network
 
@@ -80,3 +87,5 @@ networks:
 volumes:
     dbdata:
         driver: local
+    prometheus-data:
+    grafana-storage:
