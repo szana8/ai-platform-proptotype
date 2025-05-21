@@ -3,3 +3,4 @@
 .langflow-data
 .qdrant-data
 .prometheus-data
+.env
