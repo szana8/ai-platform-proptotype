@@ -3,4 +3,5 @@
 .langflow-data
 .qdrant-data
 .prometheus-data
+.langflow-logs
 .env

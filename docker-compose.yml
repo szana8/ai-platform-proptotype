@@ -24,6 +24,7 @@ services:
             - postgres
         environment:
             - LANGFLOW_DATABASE_URL=postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/langflow
+            - LANGFLOW_LOG_LEVEL=INFO
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         env_file:
@@ -31,10 +32,11 @@ services:
         volumes:
             - ./.langflow-data:/app/data
             - ./.chroma-db-data:/app/chromadb-data
+            - ./.langflow-logs:/tmp/langflow-logs
         networks:
             - app-network
 
-    vector:
+    vector-db:
         image: qdrant/qdrant:latest
         volumes:
         - ./.qdrant-data:/qdrant/storage
