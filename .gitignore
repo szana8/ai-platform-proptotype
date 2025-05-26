@@ -4,4 +4,5 @@
 .qdrant-data
 .prometheus-data
 .langflow-logs
+.redis-data
 .env

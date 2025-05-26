@@ -1,5 +1,4 @@
 services:
-
     # Postgres Service
     postgres:
         image: postgres:latest
@@ -47,6 +46,19 @@ services:
             - ./.env
         environment:
             - QDRANT_ALLOW_CORS=true
+        networks:
+            - app-network
+    
+    # Redis service
+    redis:
+        image: 'redis:alpine'
+        container_name: redis
+        command: redis-server --requirepass ${REDIS_PASSWORD}
+        volumes:
+            - ./.redis-data:/data
+        tty: true
+        ports:
+            - '${REDIS_PORT}:6379'
         networks:
             - app-network
 
