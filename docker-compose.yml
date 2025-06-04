@@ -14,16 +14,22 @@ services:
             - app-network
 
     langflow:
-        image: langflowai/langflow:1.4.2
-        #pull_policy: always
+        build:
+            context: .
+            dockerfile: ./docker/langflow/dev/Dockerfile
         ports:
             - "7860:7860"
             - "9095:9090"
         depends_on:
             - postgres
         environment:
-            - LANGFLOW_DATABASE_URL=postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/langflow
-            - LANGFLOW_LOG_LEVEL=INFO
+            LANGFLOW_DATABASE_URL: postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/langflow
+            LANGFLOW_LOG_LEVEL: INFO
+            #LANGFLOW_WORKERS: 1
+            #LANGFLOW_EVENT_DELIVERY: direct
+            #LANGFLOW_REDIS_HOST: redis
+            #LANGFLOW_REDIS_PORT: 6379
+            # LANGFLOW_CACHE_TYPE: redis
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         env_file:
@@ -31,14 +37,15 @@ services:
         volumes:
             - ./.langflow-data:/app/data
             - ./.chroma-db-data:/app/chromadb-data
-            - ./.langflow-logs:/tmp/langflow-logs
+            - ./.langflow-logs:/app/logs
+            - ./langflow-components:/app/custom_components
         networks:
             - app-network
 
     vector-db:
         image: qdrant/qdrant:latest
         volumes:
-        - ./.qdrant-data:/qdrant/storage
+            - ./.qdrant-data:/qdrant/storage
         ports:
             - "8100:6333"
             - "8101:6334"
@@ -68,14 +75,24 @@ services:
         image: grafana/grafana-oss:latest
         container_name: grafana
         environment:
-        - GF_SECURITY_ADMIN_USER=admin
-        - GF_SECURITY_ADMIN_PASSWORD=admin
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=admin
         ports:
-        - "3001:3000"   # Grafana UI
+            - "3001:3000"   # Grafana UI
         volumes:
             - ./.grafana-data:/var/lib/grafana
         depends_on:
             - prometheus
+        networks:
+            - app-network
+
+    # Redis service
+    redis:
+        image: redis:6.2.5
+        ports:
+            - 6379:6379
+        healthcheck:
+            test: "exit 0"
         networks:
             - app-network
 
